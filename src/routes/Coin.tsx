@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router';
 import styled from 'styled-components';
-import { Switch, Route, Router } from 'react-router-dom';
+import { Switch, Route, Router, Link, useRouteMatch } from 'react-router-dom';
 import Chart from './Chart';
 import Price from './Price';
+import { fetchCoinInfo, fetchCoinTickers } from '../api';
+import { useQuery } from 'react-query';
 const Container = styled.div`
   padding: 0px 20px;
   max-width: 480px;
@@ -57,6 +59,14 @@ const OverviewItem = styled.div`
     text-align: center;
   }
 `;
+const Tabs = styled(Overview)`
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+`;
+const Tab = styled(OverviewItem)<{ isActive: boolean }>`
+  color: ${(props) => props.isActive && props.theme.accentColor};
+`;
 interface IPriceData {
   id: string;
   name: string;
@@ -68,6 +78,7 @@ interface IPriceData {
   beta_value: number;
   first_data_at: string;
   last_updated: string;
+
   quotes: {
     USD: {
       ath_date: string;
@@ -113,23 +124,34 @@ interface InfoData {
 const Coin = () => {
   const { coinId } = useParams<RouteParams>();
   const { state } = useLocation<RouteState>();
-  const [loading, setLoading] = useState(true);
-  const [info, setInfo] = useState<InfoData>();
-  const [price, setPrice] = useState<IPriceData>();
-  useEffect(() => {
-    (async () => {
-      const infoData = await (
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      const priceData = await (
-        await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      setInfo(infoData);
-      console.log(infoData);
-      setPrice(priceData);
-      setLoading(false);
-    })();
-  }, [coinId]);
+  const priceMatch = useRouteMatch('/:coinId/price');
+  const chartMatch = useRouteMatch('/:coinId/chart');
+  const { isLoading: InfoLoading, data: infoData } = useQuery<InfoData>(
+    ['info', coinId],
+    () => fetchCoinInfo(coinId)
+  );
+  const { isLoading: TickersLoading, data: tickersData } = useQuery<IPriceData>(
+    ['tickers', coinId],
+    () => fetchCoinTickers(coinId)
+  );
+  // const [loading, setLoading] = useState(true);
+  // const [info, setInfo] = useState<InfoData>();
+  // const [price, setPrice] = useState<IPriceData>();
+  // useEffect(() => {
+  //   (async () => {
+  //     const infoData = await (
+  //       await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
+  //     ).json();
+  //     const priceData = await (
+  //       await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
+  //     ).json();
+  //     setInfo(infoData);
+  //     console.log(infoData);
+  //     setPrice(priceData);
+  //     setLoading(false);
+  //   })();
+  // }, [coinId]);
+  const loading = InfoLoading || TickersLoading;
   return (
     <Container>
       <Header>
@@ -138,7 +160,7 @@ const Coin = () => {
             ? state.name
             : loading
             ? 'cannot found page'
-            : info?.name}
+            : infoData?.name}
         </Title>
       </Header>
 
@@ -149,37 +171,45 @@ const Coin = () => {
           <Overview>
             <OverviewItem>
               <p>Rank</p>
-              <span>{info?.rank}</span>
+              <span>{infoData?.rank}</span>
             </OverviewItem>
             <OverviewItem>
               <p>Last updated</p>
-              <span>{info?.last_data_at}</span>
+              <span>{infoData?.last_data_at}</span>
             </OverviewItem>
             <OverviewItem>
               <p>Release data</p>
-              <span>{info?.first_data_at}</span>
+              <span>{infoData?.first_data_at}</span>
             </OverviewItem>
           </Overview>
           <Overview>
             <OverviewItem>
               <p>Coin type</p>
-              <span>{info?.type.toUpperCase()}</span>
+              <span>{infoData?.type.toUpperCase()}</span>
             </OverviewItem>
             <OverviewItem>
               <p>Coin symbol</p>
-              <span>{info?.symbol.toUpperCase()}</span>
+              <span>{infoData?.symbol.toUpperCase()}</span>
             </OverviewItem>
             <OverviewItem>
               <p>Hardware wallet</p>
-              <span> {info?.hardware_wallet ? 'Support' : 'Not yet'}</span>
+              <span> {infoData?.hardware_wallet ? 'Support' : 'Not yet'}</span>
             </OverviewItem>
           </Overview>
-          <p style={{ marginTop: '50px' }}>{info?.description}</p>
+          <p style={{ marginTop: '50px' }}>{infoData?.description}</p>
+          <Tabs>
+            <Tab isActive={chartMatch !== null}>
+              <Link to={`/${coinId}/chart`}>Chart</Link>
+            </Tab>
+            <Tab isActive={priceMatch !== null}>
+              <Link to={`/${coinId}/price`}>Price</Link>
+            </Tab>
+          </Tabs>
           <Switch>
-            <Route>
+            <Route path={`/:coinId/price`}>
               <Price />
             </Route>
-            <Route>
+            <Route path={`/:coinId/chart`}>
               <Chart />
             </Route>
           </Switch>

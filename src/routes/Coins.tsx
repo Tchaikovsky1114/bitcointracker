@@ -1,6 +1,8 @@
 import React, { Component, useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { fetchCoins } from '../api';
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -43,7 +45,7 @@ const Title = styled.h1`
   color: ${(prop) => prop.theme.accentColor};
 `;
 
-interface CoinInterface {
+interface ICoin {
   id: string;
   name: string;
   symbol: string;
@@ -58,16 +60,18 @@ interface StartLoadingInterface {
 }
 
 const Coins = () => {
-  const [coins, setCoins] = useState<CoinInterface[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      const response = await fetch('https://api.coinpaprika.com/v1/tickers');
-      const json = await response.json();
-      setCoins(json.slice(0, 200));
-      setLoading(false);
-    })();
-  }, []);
+  const { isLoading, data } = useQuery<ICoin[]>('allCoins', fetchCoins);
+
+  // const [coins, setCoins] = useState<CoinInterface[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // useEffect(() => {
+  //   (async () => {
+  //     const response = await fetch('https://api.coinpaprika.com/v1/tickers');
+  //     const json = await response.json();
+  //     setCoins(json.slice(0, 200));
+  //     setLoading(false);
+  //   })();
+  // }, []);
 
   return (
     <Container>
@@ -75,26 +79,24 @@ const Coins = () => {
         <Title>Nomargin Coin</Title>
       </Header>
 
-      {loading
-        ? 'Loading....'
-        : coins.map((coin) => (
-            <ul key={coin.id}>
-              <Coin>
-                <Link
-                  to={{
-                    pathname: `/${coin.id}`,
-                    state: { name: coin.name },
-                  }}
-                >
-                  <Img
-                    src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}
-                    alt={coin.symbol}
-                  />
-                  {coin.name} &rarr;
-                </Link>
-              </Coin>
-            </ul>
-          ))}
+      {data?.slice(0, 100).map((coin) => (
+        <ul key={coin.id}>
+          <Coin>
+            <Link
+              to={{
+                pathname: `/${coin.id}`,
+                state: { name: coin.name },
+              }}
+            >
+              <Img
+                src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}
+                alt={coin.symbol}
+              />
+              {coin.name} &rarr;
+            </Link>
+          </Coin>
+        </ul>
+      ))}
     </Container>
   );
 };
