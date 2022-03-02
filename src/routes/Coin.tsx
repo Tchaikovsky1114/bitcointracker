@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router';
 import styled from 'styled-components';
-import { Switch, Route, Router, Link, useRouteMatch } from 'react-router-dom';
+import {
+  Switch,
+  Route,
+  Router,
+  Link,
+  useRouteMatch,
+  useHistory,
+} from 'react-router-dom';
 import Chart from './Chart';
 import Price from './Price';
-import { fetchCoinInfo, fetchCoinTickers } from '../api';
+import { fetchCoinInfo, fetchCoinTickers, fetchExchangeDoller } from '../api';
 import { useQuery } from 'react-query';
+import { Helmet } from 'react-helmet';
+import { format } from 'date-fns';
 const Container = styled.div`
   padding: 0px 20px;
   max-width: 480px;
@@ -21,13 +30,6 @@ const Title = styled.h1`
   font-size: 2.5rem;
   color: ${(prop) => prop.theme.accentColor};
 `;
-
-interface RouteParams {
-  coinId: string;
-}
-interface RouteState {
-  name: string;
-}
 
 const Overview = styled.div`
   display: flex;
@@ -48,11 +50,15 @@ const OverviewItem = styled.div`
   align-items: center;
   justify-content: center;
   margin: 1px 3px;
+
   p {
     text-align: center;
     font-size: 0.8rem;
     color: ${(props) => props.theme.accentColor};
     margin-bottom: 3px;
+  }
+  a:hover {
+    color: ${(props) => props.theme.accentColor};
   }
   span {
     font-size: 0.7rem;
@@ -67,6 +73,23 @@ const Tabs = styled(Overview)`
 const Tab = styled(OverviewItem)<{ isActive: boolean }>`
   color: ${(props) => props.isActive && props.theme.accentColor};
 `;
+const Button = styled(OverviewItem)`
+  cursor: pointer;
+  width: 20%;
+  font-size: 0.5rem;
+  padding: 5px 10px;
+  :hover {
+    color: ${(props) => props.theme.accentColor};
+  }
+`;
+
+interface RouteParams {
+  coinId: string;
+}
+interface RouteState {
+  name: string;
+}
+
 interface IPriceData {
   id: string;
   name: string;
@@ -95,7 +118,7 @@ interface IPriceData {
       percent_change_30d: number;
       percent_change_30m: number;
       percent_from_price_ath: number;
-      price: number;
+      price: any;
       volume_24h: number;
       volume_24h_change_24h: number;
     };
@@ -121,19 +144,35 @@ interface InfoData {
   first_data_at: string;
   last_data_at: string;
 }
+
 const Coin = () => {
   const { coinId } = useParams<RouteParams>();
   const { state } = useLocation<RouteState>();
   const priceMatch = useRouteMatch('/:coinId/price');
   const chartMatch = useRouteMatch('/:coinId/chart');
+  const history = useHistory();
+
   const { isLoading: InfoLoading, data: infoData } = useQuery<InfoData>(
     ['info', coinId],
-    () => fetchCoinInfo(coinId)
+    () => fetchCoinInfo(coinId),
+    {
+      refetchInterval: 100000,
+    }
   );
+  const parseDate = Date.parse(infoData?.first_data_at!);
   const { isLoading: TickersLoading, data: tickersData } = useQuery<IPriceData>(
     ['tickers', coinId],
-    () => fetchCoinTickers(coinId)
+    () => fetchCoinTickers(coinId),
+    {
+      refetchInterval: 100000,
+    }
   );
+
+  const { isLoading: exchangeLoading, data: exchangeData } = useQuery(
+    ['exchangeInfo', coinId],
+    fetchExchangeDoller
+  );
+
   // const [loading, setLoading] = useState(true);
   // const [info, setInfo] = useState<InfoData>();
   // const [price, setPrice] = useState<IPriceData>();
@@ -154,6 +193,16 @@ const Coin = () => {
   const loading = InfoLoading || TickersLoading;
   return (
     <Container>
+      <Helmet>
+        <title>
+          {' '}
+          {state?.name
+            ? state.name
+            : loading
+            ? 'cannot found page'
+            : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
         <Title>
           {state?.name
@@ -174,12 +223,19 @@ const Coin = () => {
               <span>{infoData?.rank}</span>
             </OverviewItem>
             <OverviewItem>
-              <p>Last updated</p>
-              <span>{infoData?.last_data_at}</span>
+              <p>Realtime Price</p>
+              <span>
+                {exchangeLoading
+                  ? 'exchanging...'
+                  : (tickersData?.quotes.USD.price * exchangeData[0]?.basePrice)
+                      .toFixed(0)
+                      .replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',')}
+                원
+              </span>
             </OverviewItem>
             <OverviewItem>
               <p>Release data</p>
-              <span>{infoData?.first_data_at}</span>
+              <span>{format(parseDate, 'yyyy년M월d일')}</span>
             </OverviewItem>
           </Overview>
           <Overview>
@@ -207,20 +263,30 @@ const Coin = () => {
           </Tabs>
           <Switch>
             <Route path={`/:coinId/price`}>
-              <Price />
+              <Price coinId={coinId} />
             </Route>
             <Route path={`/:coinId/chart`}>
-              <Chart />
+              <Chart coinId={coinId} />
             </Route>
           </Switch>
         </div>
       )}
+      <Button
+        onClick={() => {
+          history.goBack();
+        }}
+      >
+        Back
+      </Button>
+      <Button
+        onClick={() => {
+          history.push('/');
+        }}
+      >
+        Home
+      </Button>
     </Container>
   );
 };
 
 export default Coin;
-{
-  /* <p>최고가: ${price?.quotes.USD.ath_price}</p>
-          <p>호가 : ${price?.quotes.USD.price}</p> */
-}

@@ -1,9 +1,12 @@
 import React from 'react';
 
-const Price = () => {
+interface ChartProps {
+  coinId: string;
+}
+const Price = ({ coinId }: ChartProps) => {
   return (
     <div>
-      <h1>Price</h1>
+      <h1>{coinId}Price</h1>
     </div>
   );
 };

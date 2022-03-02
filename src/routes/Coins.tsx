@@ -1,8 +1,10 @@
 import React, { Component, useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import { fetchCoins } from '../api';
+import { lightTheme } from '../theme';
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -18,7 +20,7 @@ const Header = styled.header`
 
 const Coin = styled.li`
   background-color: white;
-  color: ${(props) => props.theme.bgColor};
+  color: ${(props) => props.theme.accentColor};
   margin-bottom: 10px;
   border-radius: 15px;
   a {
@@ -75,6 +77,9 @@ const Coins = () => {
 
   return (
     <Container>
+      <Helmet>
+        <title>Nomargin Coin</title>
+      </Helmet>
       <Header>
         <Title>Nomargin Coin</Title>
       </Header>
@@ -97,6 +102,7 @@ const Coins = () => {
           </Coin>
         </ul>
       ))}
+      <button>주간모드</button>
     </Container>
   );
 };
