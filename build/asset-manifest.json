@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/nomargincoin/static/js/main.9a1ea828.js",
+    "index.html": "/nomargincoin/index.html",
+    "main.9a1ea828.js.map": "/nomargincoin/static/js/main.9a1ea828.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.9a1ea828.js"
+  ]
+}
