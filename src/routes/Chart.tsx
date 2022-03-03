@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { fetchCoinHistory } from '../api';
 import ApexChart from 'react-apexcharts';
@@ -16,53 +16,13 @@ interface IHistoricalData {
 interface ChartProps {
   coinId: string;
 }
-interface IJsonData {
-  jsonData: object;
-}
-interface Iformat {
-  closeDate: object;
-}
+
 const Chart = ({ coinId }: ChartProps) => {
   const { isLoading, data } = useQuery<IHistoricalData[]>(
     ['history', coinId],
     () => fetchCoinHistory(coinId),
-    {
-      refetchInterval: 10000,
-    }
+    { refetchInterval: 10000 }
   );
-
-  // (async () => {
-  //   const jsonData: object = await (
-  //     await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-  //   ).json();
-  //   console.log(coinId);
-  // })();
-
-  //   (async () => {
-  //     const infoData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-  //     ).json();
-  //     const priceData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-  //     ).json();
-  //     setInfo(infoData);
-  //     console.log(infoData);
-  //     setPrice(priceData);
-  //     setLoading(false);
-  //   })();
-
-  // const fetchData = async () => {
-  //   const infoData = await (
-  //     await fetch(
-  //       'https://api.coinpaprika.com/v1/coins/usdt-tether/ohlcv/historical'
-  //     )
-  //   ).json();
-  //   return infoData;
-  // };
-
-  // const calledJson = (async () => {const infoData = await (await fetch(`http://www.naver.com`)).json()});
-
-  // (async () => {const infoData = await (await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)).json();})
 
   return (
     <div>
@@ -70,82 +30,78 @@ const Chart = ({ coinId }: ChartProps) => {
         'Loading chart...'
       ) : (
         <ApexChart
-          type="line"
-          // interface IHistoricalData {
-          //   time_open: string;
-          //   time_close: string;
-          //   open: number;
-          //   high: number;
-          //   low: number;
-          //   close: number;
-          //   volume: number;
-          //   market_cap: number;
-          // }
-
+          type="candlestick"
           series={[
             {
-              name: 'Price',
-              data: data?.map((closeprice) => Math.floor(closeprice.close)),
+              data: data?.map((price) => {
+                return [
+                  Date.parse(price.time_close),
+                  (price.open * 1210).toFixed(0),
+                  (price.high * 1210).toFixed(0),
+                  (price.low * 1210).toFixed(0),
+                  (price.close * 1210).toFixed(0),
+                ];
+              }),
             },
           ]}
           options={{
-            title: {
-              text: `${coinId} 2-week trend`,
-              align: 'left',
-            },
-            chart: {
-              height: 300,
-              width: 500,
-              toolbar: {
-                show: false,
-              },
-              background: 'transparent',
-            },
-            xaxis: {
-              categories: data?.map((close) => close.time_close),
-              type: 'datetime',
-              axisBorder: {
-                show: false,
-              },
-              axisTicks: {
-                show: false,
-              },
-              labels: {
-                show: false,
-              },
-            },
-            fill: {
-              type: 'gradient',
-              gradient: {
-                gradientToColors: ['blue'],
-                stops: [0, 100],
-              },
-              colors: ['red'],
-            },
-            tooltip: {
-              y: {
-                formatter: (value) => ` ${value * 1206}원`,
-              },
-            },
-            yaxis: {
-              show: false,
-            },
             theme: {
               mode: 'dark',
               palette: 'palette7',
               monochrome: {
-                enabled: false,
-                color: '#255aee',
-                shadeTo: 'light',
-                shadeIntensity: 0.65,
+                shadeTo: 'dark',
+                shadeIntensity: 1,
+                color: 'green',
               },
             },
-
-            grid: {
-              show: false,
+            title: {
+              text: `${coinId} 14days trend`,
+              style: {
+                color: 'red',
+              },
+            },
+            chart: {
+              type: 'candlestick',
+              height: 400,
+              width: 500,
+              toolbar: {
+                show: false,
+              },
+              background: 'rgb(0,0,0,0.3)',
             },
             stroke: {
               curve: 'smooth',
+              width: 4,
+            },
+            tooltip: {
+              style: {},
+            },
+            yaxis: {
+              show: true,
+              labels: {
+                style: {
+                  colors: 'yellow',
+                  fontWeight: 'bold',
+                },
+              },
+            },
+            xaxis: {
+              type: 'datetime',
+              categories: data?.map((price) => price.time_close),
+              labels: {
+                style: {
+                  colors: 'yellow',
+                  fontWeight: 'bold',
+                },
+              },
+            },
+            plotOptions: {
+              candlestick: {
+                colors: {
+                  upward: '#f11621',
+                  downward: '#7132e6',
+                },
+              },
             },
           }}
         />

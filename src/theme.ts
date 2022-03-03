@@ -11,5 +11,5 @@ export const lightTheme: DefaultTheme = {
   bgColor: '#f5f6fa',
   textColor: 'rgb(15,200,15)',
   btnColor: 'tomato',
-  accentColor: 'rgb(175,105,25)',
+  accentColor: 'rgb(255,155,50)',
 };

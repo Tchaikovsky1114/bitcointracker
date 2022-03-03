@@ -1,7 +1,10 @@
-import React from 'react';
-import { createGlobalStyle } from 'styled-components';
+import React, { useState } from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
 import Router from './Router';
 import { ReactQueryDevtools } from 'react-query/devtools';
+import { ThemeProvider } from 'styled-components';
+import { darkTheme, lightTheme } from './theme';
+
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
   body{
@@ -63,12 +66,26 @@ table {
     color:inherit;
   }
 `;
+const Button = styled.button`
+  color: ${(prop) => prop.theme.textColor};
+  background-color: ${(prop) => prop.theme.bgColor};
+  border-radius: 10px;
+  padding: 10px;
+`;
+
 const App = () => {
+  const [themeToggle, setThemeToggle] = useState(false);
+  const handleThemeToggle = () => {
+    setThemeToggle((prev) => !prev);
+  };
   return (
     <>
-      <GlobalStyle />
-      <Router />
-      <ReactQueryDevtools initialIsOpen={true} />
+      <ThemeProvider theme={themeToggle ? darkTheme : lightTheme}>
+        <Button onClick={handleThemeToggle}>Toggle Mode 💡</Button>
+        <GlobalStyle />
+        <Router />
+        <ReactQueryDevtools initialIsOpen={true} />
+      </ThemeProvider>
     </>
   );
 };

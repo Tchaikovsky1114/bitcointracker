@@ -31,7 +31,7 @@ const Title = styled.h1`
   color: ${(prop) => prop.theme.accentColor};
 `;
 
-const Overview = styled.div`
+export const Overview = styled.div`
   display: flex;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.3);
@@ -40,7 +40,7 @@ const Overview = styled.div`
   justify-content: space-between;
   margin-bottom: 3rem;
 `;
-const OverviewItem = styled.div`
+export const OverviewItem = styled.div`
   background-color: black;
   display: flex;
   align-items: center;
@@ -159,6 +159,7 @@ const Coin = () => {
       refetchInterval: 100000,
     }
   );
+
   const parseDate = Date.parse(infoData?.first_data_at!);
   const { isLoading: TickersLoading, data: tickersData } = useQuery<IPriceData>(
     ['tickers', coinId],
@@ -271,20 +272,22 @@ const Coin = () => {
           </Switch>
         </div>
       )}
-      <Button
-        onClick={() => {
-          history.goBack();
-        }}
-      >
-        Back
-      </Button>
-      <Button
-        onClick={() => {
-          history.push('/');
-        }}
-      >
-        Home
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+        <Button
+          onClick={() => {
+            history.goBack();
+          }}
+        >
+          Back
+        </Button>
+        <Button
+          onClick={() => {
+            history.push('/');
+          }}
+        >
+          Home
+        </Button>
+      </div>
     </Container>
   );
 };

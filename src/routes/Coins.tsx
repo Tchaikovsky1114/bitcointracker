@@ -102,7 +102,6 @@ const Coins = () => {
           </Coin>
         </ul>
       ))}
-      <button>주간모드</button>
     </Container>
   );
 };
