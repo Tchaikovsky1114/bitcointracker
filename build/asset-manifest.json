@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/nomargincoin/static/js/main.9a1ea828.js",
-    "index.html": "/nomargincoin/index.html",
-    "main.9a1ea828.js.map": "/nomargincoin/static/js/main.9a1ea828.js.map"
+    "main.js": "/bitcointracker/static/js/main.0148a4d7.js",
+    "index.html": "/bitcointracker/index.html",
+    "main.0148a4d7.js.map": "/bitcointracker/static/js/main.0148a4d7.js.map"
   },
   "entrypoints": [
-    "static/js/main.9a1ea828.js"
+    "static/js/main.0148a4d7.js"
   ]
 }
